@@ -1,7 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from './supabase';
-import Auth from './components/Auth';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import ActivityLogs from './components/ActivityLogs';
@@ -11,29 +9,31 @@ import AdminPanel from './components/AdminPanel';
 import { ViewState, UserProfile } from './types';
 import { Loader2 } from 'lucide-react';
 
+// Uygulama doğrudan bu profil ile açılacak (Giriş ekranı atlandı)
+const DEFAULT_USER: UserProfile = {
+  id: '00000000-0000-0000-0000-000000000000',
+  email: 'admin@sportakip.com',
+  full_name: 'Admin Kullanıcı',
+  role: 'admin'
+};
+
 const App: React.FC = () => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user] = useState<UserProfile>(DEFAULT_USER);
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Sayfa yüklendiğinde localStorage'dan kullanıcıyı kontrol et
-    const savedUser = localStorage.getItem('fitTrackUser');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setIsLoading(false);
+    // Sayfa yüklenme simülasyonu
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
   }, []);
 
-  const handleLogin = (userData: UserProfile) => {
-    setUser(userData);
-    localStorage.setItem('fitTrackUser', JSON.stringify(userData));
-  };
-
   const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('fitTrackUser');
-    setCurrentView('dashboard');
+    if(confirm('Giriş ekranı kaldırıldı. Sayfayı yenilemek istiyor musunuz?')) {
+      window.location.reload();
+    }
   };
 
   if (isLoading) {
@@ -41,18 +41,19 @@ const App: React.FC = () => {
       <div className="flex items-center justify-center min-h-screen bg-slate-50">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="animate-spin text-indigo-600" size={40} />
-          <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Sistem Kontrol Ediliyor...</p>
+          <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">FitTrack AI Hazırlanıyor...</p>
         </div>
       </div>
     );
   }
 
-  if (!user) {
-    return <Auth onLoginSuccess={handleLogin} />;
-  }
-
   return (
-    <Layout currentView={currentView} setView={setCurrentView} user={user} onLogout={handleLogout}>
+    <Layout 
+      currentView={currentView} 
+      setView={setCurrentView} 
+      user={user} 
+      onLogout={handleLogout}
+    >
       {currentView === 'dashboard' && <Dashboard user={user} />}
       {currentView === 'logs' && <ActivityLogs user={user} />}
       {currentView === 'settings' && <Settings user={user} />}
