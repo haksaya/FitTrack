@@ -132,14 +132,12 @@ VALUES (
   'user'
 );
 
--- Admin kullanıcı oluştur
-INSERT INTO users (email, password_hash, full_name, role)
-VALUES (
-  'admin@fittrack.com',
-  hash_password('admin123'),
-  'Admin Kullanıcı',
-  'admin'
-);
+-- Admin kullanıcıyı güncelle
+UPDATE users 
+SET email = 'admin',
+    password_hash = hash_password('p@sSw0rdf'),
+    updated_at = NOW()
+WHERE role = 'admin';
 
 -- Demo kullanıcı ID'sini al
 DO $$
@@ -156,7 +154,7 @@ DECLARE
 BEGIN
   -- Kullanıcı ID'lerini al
   SELECT id INTO demo_user_id FROM users WHERE email = 'demo@fittrack.com';
-  SELECT id INTO admin_user_id FROM users WHERE email = 'admin@fittrack.com';
+  SELECT id INTO admin_user_id FROM users WHERE email = 'admin';
 
   -- Spor türlerini ekle (demo kullanıcı için)
   INSERT INTO activity_types (name, icon, color, unit, user_id, is_default)
@@ -248,7 +246,7 @@ END $$;
 -- 
 -- GİRİŞ BİLGİLERİ:
 -- Demo Kullanıcı: demo@fittrack.com / demo123
--- Admin Kullanıcı: admin@fittrack.com / admin123
+-- Admin Kullanıcı: admin / p@sSw0rdf
 -- 
 -- NOT: Güvenlik için production ortamında RLS'i aktif edin!
 -- ============================================

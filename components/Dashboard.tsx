@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../supabase';
 import { UserProfile, ActivityLog, ActivityType } from '../types';
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Activity, Flame, TrendingUp, Calendar, Plus, BrainCircuit, Loader2, Target, Award, Sparkles } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
@@ -216,13 +216,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         </div>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={stats.monthlyData}>
-              <defs>
-                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2563eb" stopOpacity={0.25}/>
-                  <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
+            <BarChart data={stats.monthlyData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis 
                 dataKey="name" 
@@ -239,14 +233,156 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 label={{ value: 'Toplam Değer', angle: -90, position: 'insideLeft', style: { fill: '#94a3b8', fontWeight: 800, fontSize: 11 } }}
               />
               <Tooltip 
-                cursor={{stroke: '#2563eb', strokeWidth: 2, strokeDasharray: '4 4'}}
+                cursor={{fill: 'rgba(37, 99, 235, 0.1)'}}
                 contentStyle={{borderRadius: '2rem', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)', padding: '20px', fontWeight: 900}}
                 itemStyle={{color: '#2563eb'}}
                 labelStyle={{color: '#1e293b', fontWeight: 900, marginBottom: 8}}
               />
-              <Area type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#chartGradient)" />
-            </AreaChart>
+              <Bar dataKey="value" fill="#2563eb" radius={[12, 12, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Aylık Aktivite Takvimi */}
+      <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 shadow-sm">
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+              {new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })} Takvimi
+            </h3>
+            <p className="text-slate-500 font-medium mt-2">Her gün bir adım, büyük bir değişim</p>
+          </div>
+          <div className="flex items-center gap-3 text-xs font-black text-slate-400">
+            <span>Az</span>
+            <div className="flex gap-2">
+              {[0, 1, 2, 3, 4].map(level => (
+                <div 
+                  key={level}
+                  className="w-5 h-5 rounded-lg"
+                  style={{
+                    backgroundColor: level === 0 ? '#f1f5f9' : 
+                                   level === 1 ? '#bfdbfe' :
+                                   level === 2 ? '#60a5fa' :
+                                   level === 3 ? '#2563eb' : '#1e40af'
+                  }}
+                />
+              ))}
+            </div>
+            <span>Çok</span>
+          </div>
+        </div>
+        
+        {/* Haftanın günleri */}
+        <div className="grid grid-cols-7 gap-3 mb-3">
+          {['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map(day => (
+            <div key={day} className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {day}
+            </div>
+          ))}
+        </div>
+        
+        <div className="grid grid-cols-7 gap-3">
+          {(() => {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startDayOfWeek = (firstDay.getDay() + 6) % 7; // Pazartesi = 0
+            
+            const cells = [];
+            
+            // Boş hücreler (ayın başlangıcından önceki günler)
+            for (let i = 0; i < startDayOfWeek; i++) {
+              cells.push(
+                <div key={`empty-${i}`} className="aspect-square"></div>
+              );
+            }
+            
+            // Ayın günleri
+            for (let day = 1; day <= daysInMonth; day++) {
+              const d = new Date(year, month, day);
+              const dateStr = d.toISOString().split('T')[0];
+              const dayLogs = logs.filter(l => l.date === dateStr);
+              const totalValue = dayLogs.reduce((sum, log) => sum + (log.value || 0), 0);
+              const isToday = dateStr === new Date().toISOString().split('T')[0];
+              
+              // Aktivite seviyesine göre renk
+              let bgColor = '#f1f5f9';
+              let textColor = '#94a3b8';
+              let intensity = 'Aktivite yok';
+              if (totalValue > 0) {
+                if (totalValue < 50) {
+                  bgColor = '#bfdbfe';
+                  textColor = '#1e40af';
+                  intensity = 'Az aktivite';
+                } else if (totalValue < 100) {
+                  bgColor = '#60a5fa';
+                  textColor = '#ffffff';
+                  intensity = 'Orta aktivite';
+                } else if (totalValue < 200) {
+                  bgColor = '#2563eb';
+                  textColor = '#ffffff';
+                  intensity = 'Yoğun aktivite';
+                } else {
+                  bgColor = '#1e40af';
+                  textColor = '#ffffff';
+                  intensity = 'Çok yoğun!';
+                }
+              }
+              
+              cells.push(
+                <div
+                  key={day}
+                  className="group relative aspect-square rounded-2xl transition-all hover:scale-105 hover:shadow-xl cursor-pointer flex items-center justify-center"
+                  style={{ backgroundColor: bgColor }}
+                >
+                  {isToday && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse z-10"></div>
+                  )}
+                  <span 
+                    className="text-sm font-black transition-all"
+                    style={{ color: textColor }}
+                  >
+                    {day}
+                  </span>
+                  
+                  {/* Hover tooltip */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-xl">
+                    <div className="font-black mb-1">{d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}</div>
+                    <div className="text-slate-300">{intensity}</div>
+                    {dayLogs.length > 0 && (
+                      <div className="text-blue-300 mt-1">{dayLogs.length} aktivite • {totalValue.toFixed(0)} toplam</div>
+                    )}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                  </div>
+                </div>
+              );
+            }
+            
+            return cells;
+          })()}
+        </div>
+        
+        <div className="mt-8 pt-8 border-t border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-3 text-slate-500">
+            <Award size={20} className="text-blue-600" />
+            <span className="font-bold text-sm">
+              {(() => {
+                const now = new Date();
+                const monthLogs = logs.filter(l => {
+                  const logDate = new Date(l.date);
+                  return logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
+                });
+                return monthLogs.length;
+              })()} aktivite bu ay
+            </span>
+          </div>
+          <div className="text-xs font-black text-slate-400 uppercase tracking-widest">
+            İstikrar = Başarı
+          </div>
         </div>
       </div>
 
