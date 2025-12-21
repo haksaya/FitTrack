@@ -21,6 +21,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [selectedTypeId, setSelectedTypeId] = useState('');
   const [value, setValue] = useState('');
   const [notes, setNotes] = useState('');
+  const [selectedActivityFilter, setSelectedActivityFilter] = useState<string>('all');
 
   const fetchData = async () => {
     if (!user) return;
@@ -95,25 +96,34 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const stats = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     const todayLogs = logs.filter(l => l.date === today);
+    // Filtrelenmiş loglar (aktivite bazında)
+    const filteredLogs = selectedActivityFilter === 'all' 
+      ? logs 
+      : logs.filter(l => l.activity_type_id === selectedActivityFilter);
     
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
+    // Aylık grafik verisi (son 30 gün)
+    const monthlyData = Array.from({ length: 30 }, (_, i) => {
       const d = new Date();
-      d.setDate(d.getDate() - (6 - i));
+      d.setDate(d.getDate() - (29 - i));
       const dateStr = d.toISOString().split('T')[0];
-      const dayLogs = logs.filter(l => l.date === dateStr);
+      const dayLogs = filteredLogs.filter(l => l.date === dateStr);
+      const totalValue = dayLogs.reduce((sum, log) => sum + (log.value || 0), 0);
+      
       return {
-        name: new Date(dateStr).toLocaleDateString('tr-TR', { weekday: 'short' }),
-        count: dayLogs.length
+        name: new Date(dateStr).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }),
+        date: dateStr,
+        count: dayLogs.length,
+        value: totalValue
       };
     });
 
     return { 
       todayCount: todayLogs.length, 
       total: logs.length, 
-      last7Days,
+      monthlyData,
       streak: logs.length > 0 ? Math.min(logs.length, 7) : 0
     };
-  }, [logs]);
+  }, [logs, selectedActivityFilter]);
 
   if (loading) {
     return (
@@ -169,107 +179,80 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         </div>
       </div>
 
-      {/* AI Analiz */}
-      <div className="bg-slate-900 rounded-[3.5rem] p-12 text-white relative overflow-hidden shadow-2xl group">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.35),transparent)]"></div>
-        <div className="relative z-10">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-10">
-            <div className="flex items-center gap-6">
-              <div className="p-5 bg-blue-600 rounded-[2rem] shadow-2xl shadow-blue-600/30 group-hover:rotate-12 transition-transform">
-                <BrainCircuit size={40} />
-              </div>
-              <div>
-                <h3 className="text-3xl font-black tracking-tight">AI Gelişim Rehberi</h3>
-                <p className="text-slate-400 font-medium mt-1">Verilerin yapay zeka tarafından analiz ediliyor.</p>
-              </div>
-            </div>
-            {!aiInsight && !isAiThinking && (
-              <button 
-                onClick={generateAiInsight}
-                className="px-10 py-4 bg-white text-slate-900 font-black rounded-2xl hover:bg-blue-50 transition-all flex items-center gap-3 text-xs uppercase tracking-widest shadow-xl"
-              >
-                Analizimi Oluştur
-              </button>
-            )}
+      {/* İstatistik Kartları */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {[
+          { label: 'Bugün', val: stats.todayCount, sub: 'Antrenman' },
+          { label: 'Toplam', val: stats.total, sub: 'Kayıt' },
+          { label: 'Aylık', val: stats.monthlyData.reduce((a, b) => a + b.count, 0), sub: 'Aktivite' }
+        ].map((s, idx) => (
+          <div key={idx} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">{s.label}</p>
+            <h4 className="text-4xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">{s.val}</h4>
+            <p className="text-xs font-bold text-slate-400 mt-2">{s.sub}</p>
           </div>
+        ))}
+      </div>
 
-          {isAiThinking ? (
-            <div className="flex items-center gap-6 p-10 bg-white/5 rounded-[2.5rem] border border-white/10 animate-pulse">
-              <Loader2 className="animate-spin text-blue-400" size={32} />
-              <p className="text-slate-300 font-bold text-lg">Son antrenmanların inceleniyor, sana özel mesaj hazırlanıyor...</p>
+      {/* Aylık Performans Grafiği - Tam Genişlik */}
+      <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+        <div className="flex items-center justify-between mb-8">
+          <h3 className="text-2xl font-black text-slate-900 tracking-tight">Aylık Performans</h3>
+          <div className="flex items-center gap-4">
+            <select
+              value={selectedActivityFilter}
+              onChange={(e) => setSelectedActivityFilter(e.target.value)}
+              className="px-6 py-3 bg-slate-50 text-slate-700 rounded-2xl text-xs font-black uppercase tracking-wider border border-slate-100 outline-none cursor-pointer hover:bg-slate-100 transition-all"
+            >
+              <option value="all">Tüm Aktiviteler</option>
+              {types.map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+            <div className="px-6 py-3 bg-slate-50 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 border border-slate-100">
+              <Calendar size={14} /> Son 30 Gün
             </div>
-          ) : aiInsight ? (
-            <div className="p-10 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md relative">
-              <div className="absolute -top-4 -left-4 w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-xl">“</div>
-              <p className="text-blue-50 text-2xl leading-relaxed font-semibold italic">
-                {aiInsight}
-              </p>
-            </div>
-          ) : (
-            <p className="text-slate-500 font-bold text-lg ml-6">Sana özel motivasyon ve analiz için yukarıdaki butona tıkla.</p>
-          )}
+          </div>
+        </div>
+        <div className="h-80 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={stats.monthlyData}>
+              <defs>
+                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#2563eb" stopOpacity={0.25}/>
+                  <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis 
+                dataKey="name" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{fill: '#94a3b8', fontSize: 10, fontWeight: 800}} 
+                dy={15}
+                interval="preserveStartEnd"
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 800}}
+                label={{ value: 'Toplam Değer', angle: -90, position: 'insideLeft', style: { fill: '#94a3b8', fontWeight: 800, fontSize: 11 } }}
+              />
+              <Tooltip 
+                cursor={{stroke: '#2563eb', strokeWidth: 2, strokeDasharray: '4 4'}}
+                contentStyle={{borderRadius: '2rem', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)', padding: '20px', fontWeight: 900}}
+                itemStyle={{color: '#2563eb'}}
+                labelStyle={{color: '#1e293b', fontWeight: 900, marginBottom: 8}}
+              />
+              <Area type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#chartGradient)" />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      {/* İstatistikler & Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2 space-y-10">
-          <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
-             <div className="flex items-center justify-between mb-12">
-              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Aktivite Grafiği</h3>
-              <div className="px-6 py-3 bg-slate-50 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 border border-slate-100">
-                <Calendar size={14} /> Son 7 Günlük Performans
-              </div>
-            </div>
-            <div className="h-80 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={stats.last7Days}>
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.25}/>
-                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 800}} 
-                    dy={15}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 800}} 
-                  />
-                  <Tooltip 
-                    cursor={{stroke: '#4f46e5', strokeWidth: 2, strokeDasharray: '4 4'}}
-                    contentStyle={{borderRadius: '2rem', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)', padding: '20px', fontWeight: 900}}
-                    itemStyle={{color: '#4f46e5'}}
-                  />
-                  <Area type="monotone" dataKey="count" stroke="#4f46e5" strokeWidth={6} fillOpacity={1} fill="url(#chartGradient)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { label: 'Bugün', val: stats.todayCount, sub: 'Antrenman' },
-              { label: 'Toplam', val: stats.total, sub: 'Kayıt' },
-              { label: 'Skor', val: stats.last7Days.reduce((a, b) => a + b.count, 0), sub: 'Puan' }
-            ].map((s, idx) => (
-              <div key={idx} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">{s.label}</p>
-                <h4 className="text-4xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">{s.val}</h4>
-                <p className="text-xs font-bold text-slate-400 mt-2">{s.sub}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 shadow-sm flex flex-col h-full">
+      {/* Son Kayıtlar ve AI Gelişim Rehberi */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 shadow-sm flex flex-col">
           <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-10">Son Kayıtlar</h3>
           <div className="space-y-8 flex-1 overflow-y-auto pr-2 custom-scrollbar">
             {logs.length > 0 ? (
@@ -296,6 +279,48 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 <p className="font-black text-slate-400">Henüz bir antrenman<br/>kaydı bulunamadı.</p>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* AI Gelişim Rehberi */}
+        <div className="bg-slate-900 rounded-[3.5rem] p-12 text-white relative overflow-hidden shadow-2xl group">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.35),transparent)]"></div>
+          <div className="relative z-10">
+            <div className="flex flex-col items-start justify-between gap-6 mb-10">
+              <div className="flex items-center gap-6">
+                <div className="p-5 bg-blue-600 rounded-[2rem] shadow-2xl shadow-blue-600/30 group-hover:rotate-12 transition-transform">
+                  <BrainCircuit size={40} />
+                </div>
+                <div>
+                  <h3 className="text-3xl font-black tracking-tight">AI Gelişim Rehberi</h3>
+                  <p className="text-slate-400 font-medium mt-1">Verilerin yapay zeka tarafından analiz ediliyor.</p>
+                </div>
+              </div>
+              {!aiInsight && !isAiThinking && (
+                <button 
+                  onClick={generateAiInsight}
+                  className="px-10 py-4 bg-white text-slate-900 font-black rounded-2xl hover:bg-blue-50 transition-all flex items-center gap-3 text-xs uppercase tracking-widest shadow-xl"
+                >
+                  Analizimi Oluştur
+                </button>
+              )}
+            </div>
+
+          {isAiThinking ? (
+            <div className="flex items-center gap-6 p-10 bg-white/5 rounded-[2.5rem] border border-white/10 animate-pulse">
+              <Loader2 className="animate-spin text-blue-400" size={32} />
+              <p className="text-slate-300 font-bold text-lg">Son antrenmanların inceleniyor, sana özel mesaj hazırlanıyor...</p>
+            </div>
+          ) : aiInsight ? (
+            <div className="p-10 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md relative">
+              <div className="absolute -top-4 -left-4 w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-xl">“</div>
+              <p className="text-blue-50 text-2xl leading-relaxed font-semibold italic">
+                {aiInsight}
+              </p>
+            </div>
+          ) : (
+            <p className="text-slate-500 font-bold text-lg ml-6">Sana özel motivasyon ve analiz için yukarıdaki butona tıkla.</p>
+)}
           </div>
         </div>
       </div>

@@ -85,10 +85,10 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
             <Sparkles size={40} />
           </div>
           <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
-            Spor<span className="text-blue-600">Takip</span>
+            Fit<span className="text-blue-600">Track</span>
           </h1>
           <p className="text-slate-500 mt-3 font-medium">
-            Kendi veritabanınla özgürce takip et.
+            Kendini özgürce takip et.
           </p>
         </div>
 
@@ -140,7 +140,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-50 focus:border-blue-500 focus:bg-white bg-slate-50 transition-all outline-none font-bold text-slate-700"
-                  placeholder="admin@sportakip.com"
+                  placeholder="E-Mail"
                 />
               </div>
             </div>
@@ -182,14 +182,6 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
               )}
             </button>
           </form>
-        </div>
-
-        <div className="mt-8 p-6 bg-white/50 rounded-2xl border border-white text-center">
-          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2">Demo Giriş</p>
-          <div className="flex flex-col gap-1 text-xs font-mono text-blue-600">
-            <span>demo@fittrack.com</span>
-            <span>demo123</span>
-          </div>
         </div>
       </div>
     </div>

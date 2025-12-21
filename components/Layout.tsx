@@ -17,7 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, setView, user, o
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { id: 'logs', label: 'Spor Geçmişi', icon: <History size={20} /> },
-    { id: 'new-activity', label: 'Özel Spor Tanımla', icon: <PlusCircle size={20} /> },
+    { id: 'new-activity', label: 'Spor Tanımla', icon: <PlusCircle size={20} /> },
     { id: 'settings', label: 'Ayarlar', icon: <Settings size={20} /> },
   ];
 

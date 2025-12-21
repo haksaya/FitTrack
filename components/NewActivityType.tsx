@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import { UserProfile } from '../types';
-import { PlusCircle, Info, ChevronRight, Loader2, Zap } from 'lucide-react';
+import { UserProfile, ActivityType } from '../types';
+import { PlusCircle, Info, ChevronRight, Loader2, Zap, Trash2, Edit2, X, Check } from 'lucide-react';
 
 interface NewActivityTypeProps {
   user: UserProfile | null;
@@ -13,6 +13,10 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
   const [name, setName] = useState('');
   const [unit, setUnit] = useState('tekrar');
   const [loading, setLoading] = useState(false);
+  const [activityTypes, setActivityTypes] = useState<ActivityType[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editUnit, setEditUnit] = useState('');
 
   const quickSuggestions = [
     { name: 'Şınav', unit: 'tekrar' },
@@ -24,6 +28,63 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
     { name: 'Yüzme', unit: 'metre' },
     { name: 'Plank', unit: 'saniye' },
   ];
+
+  useEffect(() => {
+    fetchActivityTypes();
+  }, [user]);
+
+  const fetchActivityTypes = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('activity_types')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('name');
+    
+    if (data) {
+      setActivityTypes(data);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Bu spor türünü silmek istediğinize emin misiniz?')) return;
+    
+    const { error } = await supabase
+      .from('activity_types')
+      .delete()
+      .eq('id', id);
+    
+    if (!error) {
+      fetchActivityTypes();
+    }
+  };
+
+  const startEdit = (activity: ActivityType) => {
+    setEditingId(activity.id);
+    setEditName(activity.name);
+    setEditUnit(activity.unit);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditName('');
+    setEditUnit('');
+  };
+
+  const saveEdit = async (id: string) => {
+    if (!editName) return;
+    
+    const { error } = await supabase
+      .from('activity_types')
+      .update({ name: editName, unit: editUnit })
+      .eq('id', id);
+    
+    if (!error) {
+      setEditingId(null);
+      fetchActivityTypes();
+    }
+  };
 
   const handleSubmit = async (e?: React.FormEvent, customName?: string, customUnit?: string) => {
     if (e) e.preventDefault();
@@ -45,7 +106,12 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
       });
 
       if (!error) {
-        onComplete();
+        setName('');
+        setUnit('tekrar');
+        fetchActivityTypes();
+        if (!customName) {
+          // Manuel ekleme yapıldıysa formu sıfırla
+        }
       } else {
         alert('Veritabanı hatası: ' + (error.message || 'Bilinmeyen hata. Lütfen setup.sql dosyasını Supabase\'de çalıştırın.'));
       }
@@ -58,9 +124,9 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
+    <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
       <div className="text-center space-y-4">
-        <h2 className="text-4xl font-black text-slate-900 tracking-tight">Spor Kütüphaneni Genişlet</h2>
+        <h2 className="text-4xl font-black text-slate-900 tracking-tight">Spor Tanımla</h2>
         <p className="text-slate-500 font-medium max-w-lg mx-auto">
           Mekik, şınav veya barfiks... Takip etmek istediğin her türlü aktiviteyi buradan tanımlayabilirsin.
         </p>
@@ -73,7 +139,7 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
             <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
               <PlusCircle size={24} />
             </div>
-            <h3 className="text-xl font-black text-slate-900">Özel Tanımla</h3>
+            <h3 className="text-xl font-black text-slate-900">Yeni Spor Ekle</h3>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -157,6 +223,89 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
           </div>
         </div>
       </div>
+
+      {/* Tanımlı Sporlar Listesi */}
+      {activityTypes.length > 0 && (
+        <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/40">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-black text-slate-900">Tanımlı Sporlar</h3>
+            <span className="px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl text-xs font-black">
+              {activityTypes.length} Spor
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {activityTypes.map((activity) => (
+              <div key={activity.id} className="p-5 bg-slate-50 rounded-2xl border-2 border-slate-100 hover:border-blue-200 transition-all group">
+                {editingId === activity.id ? (
+                  // Düzenleme modu
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-full px-4 py-2 rounded-xl border-2 border-blue-300 focus:border-blue-500 outline-none font-bold text-slate-700"
+                      placeholder="Aktivite adı"
+                    />
+                    <select
+                      value={editUnit}
+                      onChange={(e) => setEditUnit(e.target.value)}
+                      className="w-full px-4 py-2 rounded-xl border-2 border-blue-300 focus:border-blue-500 outline-none font-bold text-slate-700"
+                    >
+                      <option value="tekrar">tekrar</option>
+                      <option value="km">km</option>
+                      <option value="metre">metre</option>
+                      <option value="dk">dk</option>
+                      <option value="kalori">kalori</option>
+                      <option value="set">set</option>
+                    </select>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => saveEdit(activity.id)}
+                        className="flex-1 py-2 bg-blue-600 text-white rounded-xl font-black text-xs hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Check size={14} /> Kaydet
+                      </button>
+                      <button
+                        onClick={cancelEdit}
+                        className="flex-1 py-2 bg-slate-200 text-slate-600 rounded-xl font-black text-xs hover:bg-slate-300 transition-all flex items-center justify-center gap-2"
+                      >
+                        <X size={14} /> İptal
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  // Normal görünüm
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-black text-slate-900 text-lg">{activity.name}</p>
+                      <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-1">
+                        {activity.unit}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => startEdit(activity)}
+                        className="p-2 bg-blue-100 text-blue-600 rounded-xl hover:bg-blue-200 transition-all"
+                        title="Düzenle"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(activity.id)}
+                        className="p-2 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-all"
+                        title="Sil"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
