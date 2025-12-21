@@ -77,11 +77,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     e.preventDefault();
     if (!selectedTypeId || !value || !user) return;
 
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
     const { error } = await supabase.from('activity_logs').insert({
       user_id: user.id,
       activity_type_id: selectedTypeId,
       value: parseFloat(value),
-      date: new Date().toISOString().split('T')[0],
+      date: dateStr,
       notes
     });
 
@@ -94,8 +97,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   };
 
   const stats = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const todayLogs = logs.filter(l => l.date === today);
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const todayLogs = logs.filter(l => l.date === todayStr);
     // Filtrelenmiş loglar (aktivite bazında)
     const filteredLogs = selectedActivityFilter === 'all' 
       ? logs 
@@ -105,7 +109,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     const monthlyData = Array.from({ length: 30 }, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (29 - i));
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       const dayLogs = filteredLogs.filter(l => l.date === dateStr);
       const totalValue = dayLogs.reduce((sum, log) => sum + (log.value || 0), 0);
       
@@ -395,10 +399,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             // Ayın günleri
             for (let day = 1; day <= daysInMonth; day++) {
               const d = new Date(year, month, day);
-              const dateStr = d.toISOString().split('T')[0];
+              // Yerel tarih string'i oluştur (UTC saat dilimi farkından kaçınmak için)
+              const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
               const dayLogs = logs.filter(l => l.date === dateStr);
               const totalValue = dayLogs.reduce((sum, log) => sum + (log.value || 0), 0);
-              const isToday = dateStr === new Date().toISOString().split('T')[0];
+              const today = new Date();
+              const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+              const isToday = dateStr === todayStr;
               
               // Aktivite seviyesine göre renk
               let bgColor = '#f1f5f9';
