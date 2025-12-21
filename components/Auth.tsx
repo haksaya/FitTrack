@@ -14,6 +14,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -35,6 +36,11 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
           throw new Error('Veritabanı hatası: ' + dbError.message);
         }
         if (!data) throw new Error('E-posta veya şifre hatalı.');
+
+        // Oturumu açık tut seçeneği işaretliyse bilgileri kaydet
+        if (rememberMe) {
+          localStorage.setItem('fittrack_user', JSON.stringify(data));
+        }
 
         onLoginSuccess(data as UserProfile);
       } else {
@@ -159,6 +165,24 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
                 />
               </div>
             </div>
+
+            {isLogin && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-2 border-slate-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+                />
+                <label
+                  htmlFor="rememberMe"
+                  className="text-sm font-semibold text-slate-600 cursor-pointer select-none"
+                >
+                  Oturumu açık tut
+                </label>
+              </div>
+            )}
 
             {error && (
               <div className="p-4 bg-red-50 text-red-600 text-xs rounded-2xl border border-red-100 font-bold flex items-center gap-3">

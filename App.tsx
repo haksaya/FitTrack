@@ -16,11 +16,26 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Sayfa yüklenme simülasyonu
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 600);
-    return () => clearTimeout(timer);
+    // Sayfa yüklendiğinde kaydedilmiş oturumu kontrol et
+    const checkSavedSession = async () => {
+      const savedUser = localStorage.getItem('fittrack_user');
+      if (savedUser) {
+        try {
+          const userProfile = JSON.parse(savedUser);
+          setUser(userProfile);
+        } catch (err) {
+          console.error('Kaydedilmiş oturum okunamadı:', err);
+          localStorage.removeItem('fittrack_user');
+        }
+      }
+      
+      // Sayfa yüklenme simülasyonu
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 600);
+    };
+    
+    checkSavedSession();
   }, []);
 
   const handleLoginSuccess = (userProfile: UserProfile) => {
@@ -30,6 +45,8 @@ const App: React.FC = () => {
   const handleLogout = () => {
     setUser(null);
     setCurrentView('dashboard');
+    // Çıkış yapılınca kaydedilmiş oturumu temizle
+    localStorage.removeItem('fittrack_user');
   };
 
   if (isLoading) {
