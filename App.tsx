@@ -6,19 +6,12 @@ import ActivityLogs from './components/ActivityLogs';
 import Settings from './components/Settings';
 import NewActivityType from './components/NewActivityType';
 import AdminPanel from './components/AdminPanel';
+import Auth from './components/Auth';
 import { ViewState, UserProfile } from './types';
 import { Loader2 } from 'lucide-react';
 
-// Uygulama doğrudan bu profil ile açılacak (Giriş ekranı atlandı)
-const DEFAULT_USER: UserProfile = {
-  id: '00000000-0000-0000-0000-000000000000',
-  email: 'admin@sportakip.com',
-  full_name: 'Admin Kullanıcı',
-  role: 'admin'
-};
-
 const App: React.FC = () => {
-  const [user] = useState<UserProfile>(DEFAULT_USER);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -30,10 +23,13 @@ const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const handleLoginSuccess = (userProfile: UserProfile) => {
+    setUser(userProfile);
+  };
+
   const handleLogout = () => {
-    if(confirm('Giriş ekranı kaldırıldı. Sayfayı yenilemek istiyor musunuz?')) {
-      window.location.reload();
-    }
+    setUser(null);
+    setCurrentView('dashboard');
   };
 
   if (isLoading) {
@@ -45,6 +41,10 @@ const App: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    return <Auth onLoginSuccess={handleLoginSuccess} />;
   }
 
   return (

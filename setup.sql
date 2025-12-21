@@ -177,16 +177,16 @@ BEGIN
     
   INSERT INTO activity_types (name, icon, color, unit, user_id, is_default)
   VALUES
-    ('Mekik', '🔥', '#ec4899', 'tekrar', demo_user_id, true) RETURNING id INTO mekik_id;
+    ('Mekik', '🔥', '#0ea5e9', 'tekrar', demo_user_id, true) RETURNING id INTO mekik_id;
     
   INSERT INTO activity_types (name, icon, color, unit, user_id, is_default)
   VALUES
-    ('Barfiks', '🦾', '#8b5cf6', 'tekrar', demo_user_id, true) RETURNING id INTO barfiks_id;
+    ('Barfiks', '🦾', '#3b82f6', 'tekrar', demo_user_id, true) RETURNING id INTO barfiks_id;
 
   INSERT INTO activity_types (name, icon, color, unit, user_id, is_default)
   VALUES
     ('Yüzme', '🏊', '#06b6d4', 'dk', demo_user_id, true),
-    ('Yoga', '🧘', '#a855f7', 'dk', demo_user_id, true),
+    ('Yoga', '🧘', '#0284c7', 'dk', demo_user_id, true),
     ('Plank', '🧱', '#f97316', 'saniye', demo_user_id, true);
 
   -- Örnek aktivite kayıtları ekle (son 7 gün)

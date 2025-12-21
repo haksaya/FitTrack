@@ -23,15 +23,17 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
 
     try {
       if (isLogin) {
-        // Doğrudan users tablosundan kontrol et
+        // Supabase RPC ile güvenli giriş
         const { data, error: dbError } = await supabase
-          .from('users')
-          .select('id, email, full_name, role')
-          .eq('email', email)
-          .eq('password', password) // Basit şifre kontrolü
+          .rpc('login_user', {
+            user_email: email,
+            user_password: password
+          })
           .maybeSingle();
 
-        if (dbError) throw dbError;
+        if (dbError) {
+          throw new Error('Veritabanı hatası: ' + dbError.message);
+        }
         if (!data) throw new Error('E-posta veya şifre hatalı.');
 
         onLoginSuccess(data as UserProfile);
@@ -51,7 +53,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
           .from('users')
           .insert({
             email,
-            password,
+            password_hash: password,
             full_name: fullName,
             role: 'user'
           })
@@ -73,17 +75,17 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-100 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-100 rounded-full blur-3xl opacity-50"></div>
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-emerald-50 rounded-full blur-3xl opacity-50"></div>
       </div>
 
       <div className="max-w-md w-full relative z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2.5rem] bg-indigo-600 text-white shadow-2xl shadow-indigo-200 mb-6 transform hover:rotate-6 transition-transform">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2.5rem] bg-blue-600 text-white shadow-2xl shadow-blue-200 mb-6 transform hover:rotate-6 transition-transform">
             <Sparkles size={40} />
           </div>
           <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
-            Spor<span className="text-indigo-600">Takip</span>
+            Spor<span className="text-blue-600">Takip</span>
           </h1>
           <p className="text-slate-500 mt-3 font-medium">
             Kendi veritabanınla özgürce takip et.
@@ -95,7 +97,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
             <button
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
-                isLogin ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'
+                isLogin ? 'bg-white text-blue-600 shadow-md' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               Giriş
@@ -103,7 +105,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
             <button
               onClick={() => setIsLogin(false)}
               className={`flex-1 py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
-                !isLogin ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-500 hover:text-slate-700'
+                !isLogin ? 'bg-white text-blue-600 shadow-md' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               Kayıt
@@ -121,7 +123,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-50 focus:border-indigo-500 focus:bg-white bg-slate-50 transition-all outline-none font-bold text-slate-700"
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-50 focus:border-blue-500 focus:bg-white bg-slate-50 transition-all outline-none font-bold text-slate-700"
                     placeholder="Ad Soyad"
                   />
                 </div>
@@ -137,7 +139,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-50 focus:border-indigo-500 focus:bg-white bg-slate-50 transition-all outline-none font-bold text-slate-700"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-50 focus:border-blue-500 focus:bg-white bg-slate-50 transition-all outline-none font-bold text-slate-700"
                   placeholder="admin@sportakip.com"
                 />
               </div>
@@ -152,7 +154,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-50 focus:border-indigo-500 focus:bg-white bg-slate-50 transition-all outline-none font-bold text-slate-700"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-slate-50 focus:border-blue-500 focus:bg-white bg-slate-50 transition-all outline-none font-bold text-slate-700"
                   placeholder="••••••••"
                 />
               </div>
@@ -168,7 +170,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-2xl transition-all flex items-center justify-center gap-3 group disabled:opacity-70 shadow-xl shadow-indigo-100 uppercase tracking-widest text-xs"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl transition-all flex items-center justify-center gap-3 group disabled:opacity-70 shadow-xl shadow-blue-100 uppercase tracking-widest text-xs"
             >
               {loading ? (
                 <Loader2 className="animate-spin" size={20} />
@@ -183,10 +185,10 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
         </div>
 
         <div className="mt-8 p-6 bg-white/50 rounded-2xl border border-white text-center">
-          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2">Varsayılan Giriş</p>
-          <div className="flex flex-col gap-1 text-xs font-mono text-indigo-600">
-            <span>admin@sportakip.com</span>
-            <span>SporTakip123!</span>
+          <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2">Demo Giriş</p>
+          <div className="flex flex-col gap-1 text-xs font-mono text-blue-600">
+            <span>demo@fittrack.com</span>
+            <span>demo123</span>
           </div>
         </div>
       </div>

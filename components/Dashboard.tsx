@@ -118,7 +118,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
-        <Loader2 className="animate-spin text-indigo-600" size={48} />
+        <Loader2 className="animate-spin text-blue-600" size={48} />
         <p className="text-slate-400 font-black uppercase tracking-[0.2em] text-xs">Spor Verileri Yükleniyor...</p>
       </div>
     );
@@ -129,13 +129,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       {/* Üst Karşılama */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-3 bg-white p-12 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-12 text-indigo-50 opacity-10 group-hover:scale-110 transition-transform duration-1000">
+          <div className="absolute top-0 right-0 p-12 text-blue-50 opacity-10 group-hover:scale-110 transition-transform duration-1000">
             <Sparkles size={200} />
           </div>
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
             <div>
               <h2 className="text-5xl font-black text-slate-900 tracking-tighter leading-[1.1]">
-                Güç Sende, <br /><span className="text-indigo-600">{user?.full_name?.split(' ')[0] || 'Sporcu'}!</span> ⚡
+                Güç Sende, <br /><span className="text-blue-600">{user?.full_name?.split(' ')[0] || 'Sporcu'}!</span> ⚡
               </h2>
               <p className="text-slate-500 mt-6 font-medium text-lg max-w-md leading-relaxed">
                 Bugün mekik, şınav veya barfiks... Kendine bir söz verdin ve şimdi tutma zamanı.
@@ -143,7 +143,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             </div>
             <button 
               onClick={() => setShowLogModal(true)}
-              className="px-12 py-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-[2.5rem] transition-all shadow-2xl shadow-indigo-200 active:scale-95 flex items-center justify-center gap-4 group/btn"
+              className="px-12 py-6 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-[2.5rem] transition-all shadow-2xl shadow-blue-200 active:scale-95 flex items-center justify-center gap-4 group/btn"
             >
               <Plus size={28} className="group-hover/btn:rotate-90 transition-transform" />
               Veri Girişi Yap
@@ -151,7 +151,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-600 to-indigo-900 p-10 rounded-[3.5rem] text-white shadow-2xl shadow-indigo-200 flex flex-col justify-between group overflow-hidden relative">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-900 p-10 rounded-[3.5rem] text-white shadow-2xl shadow-blue-200 flex flex-col justify-between group overflow-hidden relative">
           <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
           <div>
             <div className="flex items-center gap-3 mb-6">
@@ -161,9 +161,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
               <span className="font-black uppercase tracking-widest text-[10px] opacity-80">Antrenman Serisi</span>
             </div>
             <h4 className="text-6xl font-black mb-1">{stats.streak}</h4>
-            <p className="text-indigo-100 font-bold text-sm">Gündür Hedefini Vuruyorsun!</p>
+            <p className="text-blue-100 font-bold text-sm">Gündür Hedefini Vuruyorsun!</p>
           </div>
-          <div className="mt-8 pt-8 border-t border-white/10 flex items-center gap-2 text-[11px] font-black text-indigo-200 uppercase tracking-widest">
+          <div className="mt-8 pt-8 border-t border-white/10 flex items-center gap-2 text-[11px] font-black text-blue-200 uppercase tracking-widest">
             <Target size={14} /> İstikrar Başarı Getirir
           </div>
         </div>
@@ -175,7 +175,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         <div className="relative z-10">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-10">
             <div className="flex items-center gap-6">
-              <div className="p-5 bg-indigo-600 rounded-[2rem] shadow-2xl shadow-indigo-600/30 group-hover:rotate-12 transition-transform">
+              <div className="p-5 bg-blue-600 rounded-[2rem] shadow-2xl shadow-blue-600/30 group-hover:rotate-12 transition-transform">
                 <BrainCircuit size={40} />
               </div>
               <div>
@@ -186,7 +186,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             {!aiInsight && !isAiThinking && (
               <button 
                 onClick={generateAiInsight}
-                className="px-10 py-4 bg-white text-slate-900 font-black rounded-2xl hover:bg-indigo-50 transition-all flex items-center gap-3 text-xs uppercase tracking-widest shadow-xl"
+                className="px-10 py-4 bg-white text-slate-900 font-black rounded-2xl hover:bg-blue-50 transition-all flex items-center gap-3 text-xs uppercase tracking-widest shadow-xl"
               >
                 Analizimi Oluştur
               </button>
@@ -195,13 +195,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
           {isAiThinking ? (
             <div className="flex items-center gap-6 p-10 bg-white/5 rounded-[2.5rem] border border-white/10 animate-pulse">
-              <Loader2 className="animate-spin text-indigo-400" size={32} />
+              <Loader2 className="animate-spin text-blue-400" size={32} />
               <p className="text-slate-300 font-bold text-lg">Son antrenmanların inceleniyor, sana özel mesaj hazırlanıyor...</p>
             </div>
           ) : aiInsight ? (
             <div className="p-10 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md relative">
-              <div className="absolute -top-4 -left-4 w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-xl">“</div>
-              <p className="text-indigo-50 text-2xl leading-relaxed font-semibold italic">
+              <div className="absolute -top-4 -left-4 w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-xl">“</div>
+              <p className="text-blue-50 text-2xl leading-relaxed font-semibold italic">
                 {aiInsight}
               </p>
             </div>
@@ -262,7 +262,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
             ].map((s, idx) => (
               <div key={idx} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">{s.label}</p>
-                <h4 className="text-4xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">{s.val}</h4>
+                <h4 className="text-4xl font-black text-slate-900 group-hover:text-blue-600 transition-colors">{s.val}</h4>
                 <p className="text-xs font-bold text-slate-400 mt-2">{s.sub}</p>
               </div>
             ))}
@@ -276,7 +276,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
               logs.slice(0, 6).map((log) => (
                 <div key={log.id} className="flex items-center justify-between group p-2 hover:bg-slate-50 rounded-2xl transition-all cursor-default">
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+                    <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
                       <Activity size={24} />
                     </div>
                     <div>
@@ -285,7 +285,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-black text-indigo-600 leading-none mb-1">{log.value}</p>
+                    <p className="text-2xl font-black text-blue-600 leading-none mb-1">{log.value}</p>
                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{log.activity_type?.unit}</p>
                   </div>
                 </div>
@@ -304,7 +304,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       {showLogModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-xl p-6 animate-in fade-in duration-500">
           <div className="bg-white w-full max-w-xl rounded-[4rem] shadow-2xl p-14 animate-in zoom-in-95 duration-500 border border-white relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-indigo-600"></div>
+            <div className="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
             <h3 className="text-4xl font-black text-slate-900 mb-12 tracking-tighter">Hemen Kaydet</h3>
             <form onSubmit={handleLogSubmit} className="space-y-10">
               <div className="space-y-4">
@@ -313,7 +313,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   required
                   value={selectedTypeId}
                   onChange={(e) => setSelectedTypeId(e.target.value)}
-                  className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-50 focus:border-indigo-500 focus:bg-white bg-slate-50 outline-none transition-all font-black text-slate-700 appearance-none shadow-sm cursor-pointer"
+                  className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-50 focus:border-blue-500 focus:bg-white bg-slate-50 outline-none transition-all font-black text-slate-700 appearance-none shadow-sm cursor-pointer"
                 >
                   <option value="">Aktivite Seçin...</option>
                   {types.map(t => (
@@ -332,7 +332,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   step="0.1"
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
-                  className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-50 focus:border-indigo-500 focus:bg-white bg-slate-50 outline-none transition-all font-black text-slate-700 shadow-sm text-center text-3xl"
+                  className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-50 focus:border-blue-500 focus:bg-white bg-slate-50 outline-none transition-all font-black text-slate-700 shadow-sm text-center text-3xl"
                   placeholder="0"
                 />
               </div>
@@ -347,7 +347,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 py-6 bg-indigo-600 text-white font-black rounded-[2rem] shadow-2xl shadow-indigo-100 hover:bg-indigo-700 transition-all text-xs uppercase tracking-widest"
+                  className="flex-1 py-6 bg-blue-600 text-white font-black rounded-[2rem] shadow-2xl shadow-blue-100 hover:bg-blue-700 transition-all text-xs uppercase tracking-widest"
                 >
                   Kayıt Tamamla
                 </button>

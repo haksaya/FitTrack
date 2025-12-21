@@ -27,7 +27,7 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
       <div className="bg-white rounded-[2.5rem] border border-slate-200 overflow-hidden shadow-xl shadow-slate-200/50">
         <div className="p-10 border-b border-slate-100 flex flex-col md:flex-row items-center gap-8 bg-slate-50/50">
           <div className="relative">
-            <div className="w-24 h-24 rounded-[2rem] bg-indigo-600 flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-indigo-200">
+            <div className="w-24 h-24 rounded-[2rem] bg-blue-600 flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-blue-200">
               {user?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
             </div>
             {isAdmin && (
@@ -41,7 +41,7 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
             <p className="text-slate-500 font-bold text-sm uppercase tracking-widest mt-1">{user?.email}</p>
             <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
               <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 ${
-                isAdmin ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                isAdmin ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-blue-50 border-blue-200 text-blue-700'
               }`}>
                 {isAdmin ? 'Sistem Yöneticisi' : 'Standart Üye'}
               </span>
@@ -56,7 +56,7 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
           {sections.map((section, idx) => (
             <div key={idx} className="p-8">
               <div className="flex items-center gap-4 mb-6 text-slate-900">
-                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">{section.icon}</div>
+                <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">{section.icon}</div>
                 <h4 className="font-black text-lg tracking-tight">{section.title}</h4>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -66,7 +66,7 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
                     className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 text-slate-600 text-sm font-bold transition-all group border border-transparent hover:border-slate-100"
                   >
                     {item}
-                    <ChevronRight size={16} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                    <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
                   </button>
                 ))}
               </div>

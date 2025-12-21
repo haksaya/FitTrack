@@ -15,14 +15,26 @@ const ActivityLogs: React.FC<ActivityLogsProps> = ({ user }) => {
   const fetchLogs = async () => {
     if (!user) return;
     setLoading(true);
-    // Join işlemi için alias ekledik: activity_type:activity_types(*)
-    const { data, error } = await supabase
-      .from('activity_logs')
-      .select('*, activity_type:activity_types(*)')
-      .eq('user_id', user.id)
-      .order('date', { ascending: false });
+    
+    try {
+      // Join işlemi için alias ekledik: activity_type:activity_types(*)
+      const { data, error } = await supabase
+        .from('activity_logs')
+        .select('*, activity_type:activity_types(*)')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
 
-    if (!error) setLogs(data || []);
+      if (error) {
+        console.log('Veritabanı hatası:', error);
+        setLogs([]);
+      } else {
+        setLogs(data || []);
+      }
+    } catch (error) {
+      console.error('Kayıt çekme hatası:', error);
+      setLogs([]);
+    }
+    
     setLoading(false);
   };
 
@@ -56,14 +68,14 @@ const ActivityLogs: React.FC<ActivityLogsProps> = ({ user }) => {
             placeholder="Kayıtlar içinde ara..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-14 pr-6 py-4 rounded-[1.5rem] border-2 border-slate-50 bg-slate-50 focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold text-sm shadow-sm"
+            className="w-full pl-14 pr-6 py-4 rounded-[1.5rem] border-2 border-slate-50 bg-slate-50 focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-sm shadow-sm"
           />
         </div>
       </div>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-32 gap-6">
-          <Loader2 className="animate-spin text-indigo-600" size={48} />
+          <Loader2 className="animate-spin text-blue-600" size={48} />
           <p className="text-slate-400 font-black uppercase tracking-[0.2em] text-xs">Veriler Getiriliyor...</p>
         </div>
       ) : (
@@ -84,7 +96,7 @@ const ActivityLogs: React.FC<ActivityLogsProps> = ({ user }) => {
                   <tr key={log.id} className="hover:bg-slate-50/30 transition-all group">
                     <td className="px-10 py-7">
                       <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all">
                           <Target size={20} />
                         </div>
                         <span className="font-black text-slate-900 text-lg">{log.activity_type?.name}</span>
@@ -97,7 +109,7 @@ const ActivityLogs: React.FC<ActivityLogsProps> = ({ user }) => {
                       </div>
                     </td>
                     <td className="px-10 py-7">
-                      <span className="font-black text-indigo-600 bg-indigo-50 px-5 py-2.5 rounded-2xl text-base shadow-sm">
+                      <span className="font-black text-blue-600 bg-blue-50 px-5 py-2.5 rounded-2xl text-base shadow-sm">
                         {log.value} {log.activity_type?.unit}
                       </span>
                     </td>

@@ -107,13 +107,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ user }) => {
         <div className="flex bg-slate-100 p-2 rounded-[2rem]">
           <button 
             onClick={() => setActiveTab('stats')}
-            className={`px-10 py-4 text-xs font-black uppercase tracking-widest rounded-[1.5rem] transition-all ${activeTab === 'stats' ? 'bg-white text-indigo-600 shadow-lg' : 'text-slate-500'}`}
+            className={`px-10 py-4 text-xs font-black uppercase tracking-widest rounded-[1.5rem] transition-all ${activeTab === 'stats' ? 'bg-white text-blue-600 shadow-lg' : 'text-slate-500'}`}
           >
             İstatistikler
           </button>
           <button 
             onClick={() => setActiveTab('users')}
-            className={`px-10 py-4 text-xs font-black uppercase tracking-widest rounded-[1.5rem] transition-all ${activeTab === 'users' ? 'bg-white text-indigo-600 shadow-lg' : 'text-slate-500'}`}
+            className={`px-10 py-4 text-xs font-black uppercase tracking-widest rounded-[1.5rem] transition-all ${activeTab === 'users' ? 'bg-white text-blue-600 shadow-lg' : 'text-slate-500'}`}
           >
             Kullanıcılar
           </button>
@@ -124,7 +124,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ user }) => {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm flex items-center gap-8 group hover:shadow-xl transition-all duration-300">
-              <div className="p-5 bg-indigo-50 text-indigo-600 rounded-[2rem] group-hover:bg-indigo-600 group-hover:text-white transition-all">
+              <div className="p-5 bg-blue-50 text-blue-600 rounded-[2rem] group-hover:bg-blue-600 group-hover:text-white transition-all">
                 <Users size={32} />
               </div>
               <div>
@@ -148,7 +148,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ user }) => {
               <h3 className="font-black text-slate-900 text-2xl tracking-tight">Sistem Akışı</h3>
               <button 
                 onClick={fetchAdminData} 
-                className="flex items-center gap-2 text-indigo-600 text-xs font-black uppercase tracking-widest hover:underline"
+                className="flex items-center gap-2 text-blue-600 text-xs font-black uppercase tracking-widest hover:underline"
               >
                 <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Veriyi Yenile
               </button>
@@ -166,7 +166,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ user }) => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {loading ? (
-                    <tr><td colSpan={4} className="py-20 text-center"><Loader2 className="animate-spin text-indigo-600 mx-auto" size={40} /></td></tr>
+                    <tr><td colSpan={4} className="py-20 text-center"><Loader2 className="animate-spin text-blue-600 mx-auto" size={40} /></td></tr>
                   ) : allLogs.slice(0, 20).map((log) => (
                     <tr key={log.id} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="px-10 py-6">
@@ -177,7 +177,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ user }) => {
                       </td>
                       <td className="px-10 py-6 font-black text-slate-700">{log.activity_type?.name}</td>
                       <td className="px-10 py-6">
-                        <span className="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-xl text-sm font-black">
+                        <span className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-sm font-black">
                           {log.value} {log.activity_type?.unit}
                         </span>
                       </td>
@@ -202,7 +202,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ user }) => {
                 placeholder="İsim veya e-posta ile ara..."
                 value={userSearchTerm}
                 onChange={(e) => setUserSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-6 py-4 border-2 border-slate-50 bg-slate-50 rounded-2xl focus:border-indigo-500 focus:bg-white outline-none text-sm font-bold transition-all"
+                className="w-full pl-14 pr-6 py-4 border-2 border-slate-50 bg-slate-50 rounded-2xl focus:border-blue-500 focus:bg-white outline-none text-sm font-bold transition-all"
               />
             </div>
           </div>
@@ -222,7 +222,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ user }) => {
                   <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-10 py-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-black text-lg shadow-sm">
+                        <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-black text-lg shadow-sm">
                           {u.full_name?.[0] || u.email[0].toUpperCase()}
                         </div>
                         <div className="flex flex-col">
@@ -252,7 +252,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ user }) => {
                           className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${
                             u.role === 'admin' 
                               ? 'text-red-600 hover:bg-red-50' 
-                              : 'text-indigo-600 hover:bg-indigo-50'
+                              : 'text-blue-600 hover:bg-blue-50'
                           }`}
                         >
                           {u.role === 'admin' ? (

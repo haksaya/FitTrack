@@ -34,18 +34,26 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
     if (!finalName || !user) return;
 
     setLoading(true);
-    const { error } = await supabase.from('activity_types').insert({
-      user_id: user.id,
-      name: finalName,
-      unit: finalUnit,
-      icon: 'Activity'
-    });
+    
+    try {
+      const { error } = await supabase.from('activity_types').insert({
+        user_id: user.id,
+        name: finalName,
+        unit: finalUnit,
+        icon: 'Activity',
+        color: '#3b82f6'
+      });
 
-    if (!error) {
-      onComplete();
-    } else {
-      alert('Bir hata oluştu. Bu isimde bir kategori zaten olabilir.');
+      if (!error) {
+        onComplete();
+      } else {
+        alert('Veritabanı hatası: ' + (error.message || 'Bilinmeyen hata. Lütfen setup.sql dosyasını Supabase\'de çalıştırın.'));
+      }
+    } catch (error: any) {
+      alert('Bağlantı hatası: Veritabanı kurulumu yapılmamış olabilir.');
+      console.error('Insert hatası:', error);
     }
+    
     setLoading(false);
   };
 
@@ -62,7 +70,7 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
         {/* Manuel Ekleme Formu */}
         <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/40">
           <div className="flex items-center gap-4 mb-8">
-            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+            <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
               <PlusCircle size={24} />
             </div>
             <h3 className="text-xl font-black text-slate-900">Özel Tanımla</h3>
@@ -76,7 +84,7 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-6 py-5 rounded-3xl border-2 border-slate-50 focus:border-indigo-500 focus:bg-white bg-slate-50 outline-none transition-all font-bold text-slate-700 shadow-sm"
+                className="w-full px-6 py-5 rounded-3xl border-2 border-slate-50 focus:border-blue-500 focus:bg-white bg-slate-50 outline-none transition-all font-bold text-slate-700 shadow-sm"
                 placeholder="Örn: Dağ Tırmanışı"
               />
             </div>
@@ -91,7 +99,7 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
                     onClick={() => setUnit(u)}
                     className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border-2 transition-all ${
                       unit === u 
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-md scale-105' 
+                        ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-md scale-105' 
                         : 'border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-200'
                     }`}
                   >
@@ -104,7 +112,7 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
             <button 
               type="submit"
               disabled={loading}
-              className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-3xl transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 group disabled:opacity-70 uppercase tracking-widest text-xs"
+              className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-3xl transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-3 group disabled:opacity-70 uppercase tracking-widest text-xs"
             >
               {loading ? <Loader2 className="animate-spin" /> : <>Kategori Oluştur <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" /></>}
             </button>
@@ -118,7 +126,7 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
           </div>
           <div className="relative z-10">
             <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-white/10 text-indigo-400 rounded-2xl backdrop-blur-md border border-white/10">
+              <div className="p-3 bg-white/10 text-blue-400 rounded-2xl backdrop-blur-md border border-white/10">
                 <Zap size={24} />
               </div>
               <h3 className="text-xl font-black">Hızlı Öneriler</h3>
@@ -135,15 +143,15 @@ const NewActivityType: React.FC<NewActivityTypeProps> = ({ user, onComplete }) =
                 >
                   <div className="text-left">
                     <p className="font-black text-sm">{suggestion.name}</p>
-                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{suggestion.unit}</p>
+                    <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">{suggestion.unit}</p>
                   </div>
-                  <PlusCircle size={18} className="text-slate-600 group-hover:text-indigo-400 transition-colors" />
+                  <PlusCircle size={18} className="text-slate-600 group-hover:text-blue-400 transition-colors" />
                 </button>
               ))}
             </div>
 
-            <div className="mt-10 p-6 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 flex gap-4 text-xs font-medium text-indigo-200">
-              <Info size={20} className="shrink-0 text-indigo-400" />
+            <div className="mt-10 p-6 bg-blue-500/10 rounded-2xl border border-blue-500/20 flex gap-4 text-xs font-medium text-blue-200">
+              <Info size={20} className="shrink-0 text-blue-400" />
               <p>Bir kategori zaten listenizde varsa tekrar eklenmeyecektir. Listenizi dashboard üzerinden kontrol edebilirsiniz.</p>
             </div>
           </div>

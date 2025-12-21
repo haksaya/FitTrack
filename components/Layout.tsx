@@ -41,10 +41,10 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, setView, user, o
       <aside className="hidden lg:flex flex-col w-80 bg-white border-r border-slate-100 shadow-2xl shadow-slate-200/50 relative z-50">
         <div className="p-10 mb-6">
           <h1 className="text-2xl font-black text-slate-900 flex items-center gap-3 tracking-tighter">
-            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-200 transform -rotate-3">
+            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-200 transform -rotate-3">
               F
             </div>
-            FitTrack <span className="text-indigo-600">AI</span>
+            FitTrack <span className="text-blue-600">AI</span>
           </h1>
         </div>
         
@@ -56,7 +56,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, setView, user, o
               onClick={() => setView(item.id as ViewState)}
               className={`w-full flex items-center justify-between px-6 py-4 rounded-[1.5rem] text-sm font-black transition-all group ${
                 currentView === item.id 
-                  ? 'bg-indigo-600 text-white shadow-2xl shadow-indigo-100 scale-[1.02]' 
+                  ? 'bg-blue-600 text-white shadow-2xl shadow-blue-100 scale-[1.02]' 
                   : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
@@ -71,10 +71,10 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, setView, user, o
 
         <div className="p-8">
           <div className="bg-slate-900 rounded-[2rem] p-6 text-white mb-6 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-24 h-24 bg-indigo-500/20 rounded-full"></div>
+            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-24 h-24 bg-blue-500/20 rounded-full"></div>
             <div className="flex items-center gap-4 mb-4 relative z-10">
               <div className="w-12 h-12 rounded-[1.2rem] bg-white/10 flex items-center justify-center border border-white/10 backdrop-blur-md">
-                <User size={20} className="text-indigo-300" />
+                <User size={20} className="text-blue-300" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-black truncate">{user?.full_name || 'Sporcu'}</p>
@@ -102,7 +102,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, setView, user, o
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         <header className="lg:hidden h-20 flex items-center justify-between px-8 bg-white border-b border-slate-100 shrink-0 shadow-sm relative z-40">
           <h1 className="text-xl font-black text-slate-900 tracking-tighter">
-            FitTrack <span className="text-indigo-600">AI</span>
+            FitTrack <span className="text-blue-600">AI</span>
           </h1>
           <button 
             onClick={() => setView('settings')}
@@ -124,7 +124,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, setView, user, o
               key={item.id}
               onClick={() => setView(item.id as ViewState)}
               className={`flex flex-col items-center justify-center w-16 h-16 rounded-2xl transition-all ${
-                currentView === item.id ? 'text-indigo-600 bg-indigo-50/50' : 'text-slate-300'
+                currentView === item.id ? 'text-blue-600 bg-blue-50/50' : 'text-slate-300'
               }`}
             >
               {item.icon}
