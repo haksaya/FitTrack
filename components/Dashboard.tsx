@@ -109,12 +109,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       const dayLogs = filteredLogs.filter(l => l.date === dateStr);
       const totalValue = dayLogs.reduce((sum, log) => sum + (log.value || 0), 0);
       
-      return {
+      // Her aktivite türü için ayrı değerler
+      const dataPoint: any = {
         name: new Date(dateStr).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }),
         date: dateStr,
         count: dayLogs.length,
         value: totalValue
       };
+      
+      // Eğer "Tüm Aktiviteler" seçiliyse, her aktivite türü için ayrı sütunlar oluştur
+      if (selectedActivityFilter === 'all') {
+        types.forEach(type => {
+          const typeValue = dayLogs
+            .filter(l => l.activity_type_id === type.id)
+            .reduce((sum, log) => sum + (log.value || 0), 0);
+          dataPoint[type.name] = typeValue;
+        });
+      }
+      
+      return dataPoint;
     });
 
     return { 
@@ -123,7 +136,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       monthlyData,
       streak: logs.length > 0 ? Math.min(logs.length, 7) : 0
     };
-  }, [logs, selectedActivityFilter]);
+  }, [logs, selectedActivityFilter, types]);
 
   if (loading) {
     return (
@@ -216,7 +229,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         </div>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={stats.monthlyData}>
+            <BarChart data={stats.monthlyData} barGap={2} barCategoryGap="20%">
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis 
                 dataKey="name" 
@@ -238,10 +251,88 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 itemStyle={{color: '#2563eb'}}
                 labelStyle={{color: '#1e293b', fontWeight: 900, marginBottom: 8}}
               />
-              <Bar dataKey="value" fill="#2563eb" radius={[12, 12, 0, 0]} />
+              {selectedActivityFilter === 'all' ? (
+                // Tüm aktiviteler için farklı renkli barlar - yan yana
+                (() => {
+                  // Aktivite türlerini sırala: önce şınav, sonra dumble, sonra diğerleri
+                  const sortedTypes = [...types].sort((a, b) => {
+                    const aName = a.name.toLowerCase();
+                    const bName = b.name.toLowerCase();
+                    if (aName.includes('şınav')) return -1;
+                    if (bName.includes('şınav')) return 1;
+                    if (aName.includes('dumble') || aName.includes('dumbbell')) return -1;
+                    if (bName.includes('dumble') || bName.includes('dumbbell')) return 1;
+                    return 0;
+                  });
+                  
+                  // Bootstrap renkleri: success, primary, warning, danger, info, secondary
+                  const getColor = (typeName: string, index: number) => {
+                    const name = typeName.toLowerCase();
+                    if (name.includes('şınav')) return '#198754'; // success (yeşil)
+                    if (name.includes('dumble') || name.includes('dumbbell')) return '#0d6efd'; // primary (mavi)
+                    if (name.includes('plank')) return '#ffc107'; // warning (sarı)
+                    if (name.includes('squat')) return '#dc3545'; // danger (kırmızı)
+                    const otherColors = ['#0dcaf0', '#6c757d', '#20c997', '#fd7e14', '#6f42c1', '#d63384'];
+                    return otherColors[index % otherColors.length];
+                  };
+                  
+                  return sortedTypes.map((type, index) => (
+                    <Bar 
+                      key={type.id}
+                      dataKey={type.name} 
+                      fill={getColor(type.name, index)} 
+                      radius={[6, 6, 0, 0]}
+                      barSize={15}
+                    />
+                  ));
+                })()
+              ) : (
+                // Tek aktivite için mavi bar
+                <Bar dataKey="value" fill="#0d6efd" radius={[12, 12, 0, 0]} />
+              )}
             </BarChart>
           </ResponsiveContainer>
         </div>
+        {/* Renk Göstergesi - Sadece "Tüm Aktiviteler" seçiliyken göster */}
+        {selectedActivityFilter === 'all' && types.length > 0 && (
+          <div className="mt-8 pt-8 border-t border-slate-100">
+            <div className="flex flex-wrap gap-4 justify-center">
+              {(() => {
+                // Aktivite türlerini sırala: önce şınav, sonra dumble, sonra diğerleri
+                const sortedTypes = [...types].sort((a, b) => {
+                  const aName = a.name.toLowerCase();
+                  const bName = b.name.toLowerCase();
+                  if (aName.includes('şınav')) return -1;
+                  if (bName.includes('şınav')) return 1;
+                  if (aName.includes('dumble') || aName.includes('dumbbell')) return -1;
+                  if (bName.includes('dumble') || bName.includes('dumbbell')) return 1;
+                  return 0;
+                });
+                
+                // Bootstrap renkleri: success, primary, warning, danger, info, secondary
+                const getColor = (typeName: string, index: number) => {
+                  const name = typeName.toLowerCase();
+                  if (name.includes('şınav')) return '#198754'; // success (yeşil)
+                  if (name.includes('dumble') || name.includes('dumbbell')) return '#0d6efd'; // primary (mavi)
+                  if (name.includes('plank')) return '#ffc107'; // warning (sarı)
+                  if (name.includes('squat')) return '#dc3545'; // danger (kırmızı)
+                  const otherColors = ['#0dcaf0', '#6c757d', '#20c997', '#fd7e14', '#6f42c1', '#d63384'];
+                  return otherColors[index % otherColors.length];
+                };
+                
+                return sortedTypes.map((type, index) => (
+                  <div key={type.id} className="flex items-center gap-2">
+                    <div 
+                      className="w-4 h-4 rounded-lg"
+                      style={{ backgroundColor: getColor(type.name, index) }}
+                    />
+                    <span className="text-xs font-black text-slate-600">{type.name}</span>
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Aylık Aktivite Takvimi */}
