@@ -55,11 +55,17 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
 
         if (existingUser) throw new Error('bu e-posta adresi zaten kullanımda.');
 
+        // Şifreyi hash'le ve kullanıcı oluştur
+        const { data: hashedPassword, error: hashError } = await supabase
+          .rpc('hash_password', { password });
+
+        if (hashError) throw new Error('Şifre işlenirken hata oluştu.');
+
         const { data, error: signUpError } = await supabase
           .from('users')
           .insert({
             email,
-            password_hash: password,
+            password_hash: hashedPassword,
             full_name: fullName,
             role: 'user'
           })
