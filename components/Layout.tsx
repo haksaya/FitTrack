@@ -44,7 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, setView, user, o
             <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-200 transform -rotate-3">
               F
             </div>
-            FitTrack <span className="text-blue-600">AI</span>
+            FitTrack
           </h1>
         </div>
         
