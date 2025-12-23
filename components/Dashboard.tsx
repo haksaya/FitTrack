@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../supabase';
 import { UserProfile, ActivityLog, ActivityType } from '../types';
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Rectangle } from 'recharts';
 import { Activity, Flame, TrendingUp, Calendar, Plus, BrainCircuit, Loader2, Target, Award, Sparkles } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
@@ -233,7 +233,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         </div>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={stats.monthlyData} barGap={2} barCategoryGap="20%">
+            <BarChart data={stats.monthlyData} barGap={0} barCategoryGap="20%">
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis 
                 dataKey="name" 
@@ -258,8 +258,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
               {selectedActivityFilter === 'all' ? (
                 // Tüm aktiviteler için farklı renkli barlar - yan yana
                 (() => {
+                  // En az bir kere yapılmış aktiviteleri bul
+                  const activeTypes = types.filter(type => 
+                    stats.monthlyData.some(day => day[type.name] && day[type.name] > 0)
+                  );
+                  
                   // Aktivite türlerini sırala: önce şınav, sonra dumble, sonra diğerleri
-                  const sortedTypes = [...types].sort((a, b) => {
+                  const sortedTypes = [...activeTypes].sort((a, b) => {
                     const aName = a.name.toLowerCase();
                     const bName = b.name.toLowerCase();
                     if (aName.includes('şınav')) return -1;
@@ -302,8 +307,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           <div className="mt-8 pt-8 border-t border-slate-100">
             <div className="flex flex-wrap gap-4 justify-center">
               {(() => {
+                // En az bir kere yapılmış aktiviteleri bul
+                const activeTypes = types.filter(type => 
+                  stats.monthlyData.some(day => day[type.name] && day[type.name] > 0)
+                );
+                
                 // Aktivite türlerini sırala: önce şınav, sonra dumble, sonra diğerleri
-                const sortedTypes = [...types].sort((a, b) => {
+                const sortedTypes = [...activeTypes].sort((a, b) => {
                   const aName = a.name.toLowerCase();
                   const bName = b.name.toLowerCase();
                   if (aName.includes('şınav')) return -1;
