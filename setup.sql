@@ -102,7 +102,27 @@ CREATE INDEX idx_activity_logs_date ON activity_logs(date);
 CREATE INDEX idx_activity_logs_type_id ON activity_logs(activity_type_id);
 
 -- ============================================
--- ADIM 6: Login Fonksiyonu
+-- ADIM 6: Kilo Takibi Tablosu
+-- ============================================
+CREATE TABLE weight_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  weight NUMERIC(5, 2) NOT NULL,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+-- RLS'i kapat
+ALTER TABLE weight_logs DISABLE ROW LEVEL SECURITY;
+
+-- Index'ler oluştur
+CREATE INDEX idx_weight_logs_user_id ON weight_logs(user_id);
+CREATE INDEX idx_weight_logs_date ON weight_logs(date);
+
+-- ============================================
+-- ADIM 7: Login Fonksiyonu
 -- ============================================
 CREATE OR REPLACE FUNCTION login_user(user_email TEXT, user_password TEXT)
 RETURNS TABLE (id UUID, email TEXT, full_name TEXT, role TEXT) AS $$
@@ -120,7 +140,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================
--- ADIM 7: Demo Kullanıcı ve Veriler
+-- ADIM 8: Demo Kullanıcı ve Veriler
 -- ============================================
 
 -- Demo kullanıcı oluştur
@@ -232,6 +252,20 @@ BEGIN
   VALUES 
     (demo_user_id, kosu_id, 20, CURRENT_DATE - 6, 'İyileşme koşusu'),
     (demo_user_id, bisiklet_id, 45, CURRENT_DATE - 6, 'Sabah bisikleti');
+
+  -- Demo kilo kayıtları ekle (son 30 gün için gerçekçi bir kilo takibi)
+  INSERT INTO weight_logs (user_id, weight, date, notes)
+  VALUES 
+    (demo_user_id, 78.5, CURRENT_DATE, 'Sabah kilom'),
+    (demo_user_id, 78.8, CURRENT_DATE - 2, 'Hafif artış'),
+    (demo_user_id, 79.2, CURRENT_DATE - 5, null),
+    (demo_user_id, 79.5, CURRENT_DATE - 7, 'Hafta başı ölçümü'),
+    (demo_user_id, 79.8, CURRENT_DATE - 10, null),
+    (demo_user_id, 80.1, CURRENT_DATE - 14, 'İki haftalık ölçüm'),
+    (demo_user_id, 80.5, CURRENT_DATE - 17, null),
+    (demo_user_id, 80.9, CURRENT_DATE - 21, 'Üç hafta önce'),
+    (demo_user_id, 81.2, CURRENT_DATE - 25, null),
+    (demo_user_id, 81.5, CURRENT_DATE - 28, 'Başlangıç kilom');
 
 END $$;
 

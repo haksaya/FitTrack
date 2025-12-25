@@ -1,6 +1,6 @@
 
 import React, { ReactNode } from 'react';
-import { LayoutDashboard, History, Settings, PlusCircle, LogOut, User, ShieldAlert, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, History, Settings, PlusCircle, LogOut, User, ShieldAlert, ChevronRight, Scale } from 'lucide-react';
 import { ViewState, UserProfile } from '../types';
 
 interface LayoutProps {
@@ -17,12 +17,13 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, setView, user, o
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
     { id: 'logs', label: 'Spor Geçmişi', icon: <History size={20} /> },
+    { id: 'weight-tracker', label: 'Kilo Takibi', icon: <Scale size={20} /> },
     { id: 'new-activity', label: 'Spor Tanımla', icon: <PlusCircle size={20} /> },
     { id: 'settings', label: 'Ayarlar', icon: <Settings size={20} /> },
   ];
 
   if (isAdmin) {
-    menuItems.splice(3, 0, { 
+    menuItems.splice(4, 0, { 
       id: 'admin-panel', 
       label: 'Admin Paneli', 
       icon: <ShieldAlert size={20} className="text-amber-500" /> 

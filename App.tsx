@@ -6,6 +6,7 @@ import ActivityLogs from './components/ActivityLogs';
 import Settings from './components/Settings';
 import NewActivityType from './components/NewActivityType';
 import AdminPanel from './components/AdminPanel';
+import WeightTracker from './components/WeightTracker';
 import Auth from './components/Auth';
 import { ViewState, UserProfile } from './types';
 import { Loader2 } from 'lucide-react';
@@ -76,6 +77,7 @@ const App: React.FC = () => {
       {currentView === 'settings' && <Settings user={user} />}
       {currentView === 'new-activity' && <NewActivityType user={user} onComplete={() => setCurrentView('dashboard')} />}
       {currentView === 'admin-panel' && <AdminPanel user={user} />}
+      {currentView === 'weight-tracker' && <WeightTracker user={user} />}
     </Layout>
   );
 };

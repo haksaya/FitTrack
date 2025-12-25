@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../supabase';
-import { UserProfile, ActivityLog, ActivityType } from '../types';
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Rectangle } from 'recharts';
-import { Activity, Flame, TrendingUp, Calendar, Plus, BrainCircuit, Loader2, Target, Award, Sparkles } from 'lucide-react';
+import { UserProfile, ActivityLog, ActivityType, WeightLog } from '../types';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Rectangle, LineChart, Line } from 'recharts';
+import { Activity, Flame, TrendingUp, Calendar, Plus, BrainCircuit, Loader2, Target, Award, Sparkles, Scale, TrendingDown } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
 interface DashboardProps {
@@ -13,8 +13,10 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [types, setTypes] = useState<ActivityType[]>([]);
+  const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [showLogModal, setShowLogModal] = useState(false);
+  const [showWeightModal, setShowWeightModal] = useState(false);
   const [aiInsight, setAiInsight] = useState<string>("");
   const [isAiThinking, setIsAiThinking] = useState(false);
 
@@ -22,6 +24,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [value, setValue] = useState('');
   const [notes, setNotes] = useState('');
   const [selectedActivityFilter, setSelectedActivityFilter] = useState<string>('all');
+  
+  // Kilo girişi için state'ler
+  const [weightInput, setWeightInput] = useState('');
+  const [weightDate, setWeightDate] = useState(new Date().toISOString().split('T')[0]);
+  const [weightNotes, setWeightNotes] = useState('');
 
   const fetchData = async () => {
     if (!user) return;
@@ -40,8 +47,17 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       .eq('user_id', user.id)
       .order('date', { ascending: false });
 
+    // Kilo kayıtlarını getir
+    const { data: weightData } = await supabase
+      .from('weight_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false })
+      .limit(10);
+
     setTypes(typeData || []);
     setLogs(logData || []);
+    setWeightLogs(weightData || []);
     setLoading(false);
   };
 
@@ -92,6 +108,26 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
       setShowLogModal(false);
       setValue('');
       setNotes('');
+      fetchData();
+    }
+  };
+
+  const handleWeightSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!weightInput || !user) return;
+
+    const { error } = await supabase.from('weight_logs').insert({
+      user_id: user.id,
+      weight: parseFloat(weightInput),
+      date: weightDate,
+      notes: weightNotes
+    });
+
+    if (!error) {
+      setShowWeightModal(false);
+      setWeightInput('');
+      setWeightNotes('');
+      setWeightDate(new Date().toISOString().split('T')[0]);
       fetchData();
     }
   };
@@ -168,13 +204,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                 Bugün mekik, şınav veya barfiks... Kendine bir söz verdin ve şimdi tutma zamanı.
               </p>
             </div>
-            <button 
-              onClick={() => setShowLogModal(true)}
-              className="px-12 py-6 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-[2.5rem] transition-all shadow-2xl shadow-blue-200 active:scale-95 flex items-center justify-center gap-4 group/btn"
-            >
-              <Plus size={28} className="group-hover/btn:rotate-90 transition-transform" />
-              Veri Girişi Yap
-            </button>
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={() => setShowLogModal(true)}
+                className="px-12 py-6 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-[2.5rem] transition-all shadow-2xl shadow-blue-200 active:scale-95 flex items-center justify-center gap-4 group/btn"
+              >
+                <Plus size={28} className="group-hover/btn:rotate-90 transition-transform" />
+                Etkinlik Girişi Yap
+              </button>
+              <button 
+                onClick={() => setShowWeightModal(true)}
+                className="px-12 py-6 bg-green-600 hover:bg-green-700 text-white font-black rounded-[2.5rem] transition-all shadow-2xl shadow-green-200 active:scale-95 flex items-center justify-center gap-4 group/btn"
+              >
+                <Scale size={28} />
+                Kilo Girişi Yap
+              </button>
+            </div>
           </div>
         </div>
 
@@ -210,6 +255,77 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
           </div>
         ))}
       </div>
+
+      {/* Kilo Takip Widget */}
+      {weightLogs.length > 0 && (
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-12 rounded-[3.5rem] border border-green-100 shadow-sm">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+            <div>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-4 bg-green-600 rounded-2xl">
+                  <Scale className="text-white" size={28} />
+                </div>
+                <h3 className="text-3xl font-black text-slate-900 tracking-tight">Kilo Takibi</h3>
+              </div>
+              <div className="flex items-baseline gap-4 mt-6">
+                <div>
+                  <p className="text-[10px] font-black text-green-700 uppercase tracking-widest mb-2">Güncel Kilo</p>
+                  <h4 className="text-5xl font-black text-green-600">{weightLogs[0].weight.toFixed(1)} <span className="text-2xl text-green-500">kg</span></h4>
+                </div>
+                {weightLogs.length > 1 && (
+                  <div className="ml-8">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Değişim</p>
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const sorted = [...weightLogs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                        const change = sorted[sorted.length - 1].weight - sorted[0].weight;
+                        const isDown = change < -0.5;
+                        const isUp = change > 0.5;
+                        return (
+                          <>
+                            {isDown && <TrendingDown className="text-green-600" size={24} />}
+                            {isUp && <TrendingUp className="text-orange-600" size={24} />}
+                            <span className={`text-3xl font-black ${isDown ? 'text-green-600' : isUp ? 'text-orange-600' : 'text-slate-600'}`}>
+                              {change >= 0 ? '+' : ''}{change.toFixed(1)} kg
+                            </span>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex-1 max-w-md h-32">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={[...weightLogs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map(log => ({
+                  date: new Date(log.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }),
+                  weight: log.weight
+                }))}>
+                  <Line
+                    type="monotone"
+                    dataKey="weight"
+                    stroke="#16a34a"
+                    strokeWidth={3}
+                    dot={{ fill: '#16a34a', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #86efac',
+                      borderRadius: '1rem',
+                      padding: '8px 12px',
+                      fontSize: '12px',
+                      fontWeight: 700
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Aylık Performans Grafiği - Tam Genişlik */}
       <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
@@ -494,80 +610,66 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
         </div>
       </div>
 
-      {/* Son Kayıtlar ve AI Gelişim Rehberi */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 shadow-sm flex flex-col">
-          <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-10">Son Kayıtlar</h3>
-          <div className="space-y-8 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-            {logs.length > 0 ? (
-              logs.slice(0, 6).map((log) => (
-                <div key={log.id} className="flex items-center justify-between group p-2 hover:bg-slate-50 rounded-2xl transition-all cursor-default">
-                  <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                      <Activity size={24} />
-                    </div>
-                    <div>
-                      <p className="font-black text-slate-900 text-lg leading-none mb-2">{log.activity_type?.name}</p>
-                      <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{new Date(log.date).toLocaleDateString('tr-TR')}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-black text-blue-600 leading-none mb-1">{log.value}</p>
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{log.activity_type?.unit}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center opacity-30 gap-4">
-                <Award size={64} className="text-slate-300" />
-                <p className="font-black text-slate-400">Henüz bir antrenman<br/>kaydı bulunamadı.</p>
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* AI Gelişim Rehberi */}
-        <div className="bg-slate-900 rounded-[3.5rem] p-12 text-white relative overflow-hidden shadow-2xl group">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.35),transparent)]"></div>
-          <div className="relative z-10">
-            <div className="flex flex-col items-start justify-between gap-6 mb-10">
-              <div className="flex items-center gap-6">
-                <div className="p-5 bg-blue-600 rounded-[2rem] shadow-2xl shadow-blue-600/30 group-hover:rotate-12 transition-transform">
-                  <BrainCircuit size={40} />
-                </div>
-                <div>
-                  <h3 className="text-3xl font-black tracking-tight">AI Gelişim Rehberi</h3>
-                  <p className="text-slate-400 font-medium mt-1">Verilerin yapay zeka tarafından analiz ediliyor.</p>
-                </div>
-              </div>
-              {!aiInsight && !isAiThinking && (
-                <button 
-                  onClick={generateAiInsight}
-                  className="px-10 py-4 bg-white text-slate-900 font-black rounded-2xl hover:bg-blue-50 transition-all flex items-center gap-3 text-xs uppercase tracking-widest shadow-xl"
-                >
-                  Analizimi Oluştur
-                </button>
-              )}
-            </div>
+      {/* Kilo Takip Grafiği */}
+      {weightLogs.length > 0 && (() => {
+        const sorted = [...weightLogs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const chartData = sorted.map(log => ({
+          date: new Date(log.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }),
+          weight: log.weight,
+          fullDate: log.date
+        }));
 
-          {isAiThinking ? (
-            <div className="flex items-center gap-6 p-10 bg-white/5 rounded-[2.5rem] border border-white/10 animate-pulse">
-              <Loader2 className="animate-spin text-blue-400" size={32} />
-              <p className="text-slate-300 font-bold text-lg">Son antrenmanların inceleniyor, sana özel mesaj hazırlanıyor...</p>
+        return (
+          <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Kilo Takip Grafiği</h3>
+              <div className="px-6 py-3 bg-slate-50 text-slate-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 border border-slate-100">
+                <Calendar size={14} /> {chartData.length} Ölçüm
+              </div>
             </div>
-          ) : aiInsight ? (
-            <div className="p-10 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md relative">
-              <div className="absolute -top-4 -left-4 w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-xl">“</div>
-              <p className="text-blue-50 text-2xl leading-relaxed font-semibold italic">
-                {aiInsight}
-              </p>
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }}
+                    dy={15}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 800 }}
+                    domain={['dataMin - 2', 'dataMax + 2']}
+                    label={{ value: 'Kilo (kg)', angle: -90, position: 'insideLeft', style: { fill: '#94a3b8', fontWeight: 800, fontSize: 11 } }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '1rem',
+                      padding: '12px',
+                      fontSize: '12px',
+                      fontWeight: 700
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="weight"
+                    stroke="#16a34a"
+                    strokeWidth={3}
+                    dot={{ fill: '#16a34a', r: 5 }}
+                    activeDot={{ r: 7 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-          ) : (
-            <p className="text-slate-500 font-bold text-lg ml-6">Sana özel motivasyon ve analiz için yukarıdaki butona tıkla.</p>
-)}
           </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Kayıt Modalı */}
       {showLogModal && (
@@ -619,6 +721,71 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   className="flex-1 py-6 bg-blue-600 text-white font-black rounded-[2rem] shadow-2xl shadow-blue-100 hover:bg-blue-700 transition-all text-xs uppercase tracking-widest"
                 >
                   Kayıt Tamamla
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Kilo Girişi Modal */}
+      {showWeightModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-xl p-6 animate-in fade-in duration-500">
+          <div className="bg-white w-full max-w-xl rounded-[4rem] shadow-2xl p-14 animate-in zoom-in-95 duration-500 border border-white relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-green-600"></div>
+            <h3 className="text-4xl font-black text-slate-900 mb-12 tracking-tighter flex items-center gap-4">
+              <Scale className="text-green-600" size={36} />
+              Kilo Ekle
+            </h3>
+            <form onSubmit={handleWeightSubmit} className="space-y-10">
+              <div className="space-y-4">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Kilo (kg)</label>
+                <input 
+                  type="number"
+                  required
+                  step="0.1"
+                  value={weightInput}
+                  onChange={(e) => setWeightInput(e.target.value)}
+                  className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-50 focus:border-green-500 focus:bg-white bg-slate-50 outline-none transition-all font-black text-slate-700 shadow-sm text-center text-3xl"
+                  placeholder="75.5"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Tarih</label>
+                <input 
+                  type="date"
+                  required
+                  value={weightDate}
+                  onChange={(e) => setWeightDate(e.target.value)}
+                  className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-50 focus:border-green-500 focus:bg-white bg-slate-50 outline-none transition-all font-black text-slate-700 shadow-sm"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Notlar (Opsiyonel)</label>
+                <textarea 
+                  value={weightNotes}
+                  onChange={(e) => setWeightNotes(e.target.value)}
+                  className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-50 focus:border-green-500 focus:bg-white bg-slate-50 outline-none transition-all font-black text-slate-700 shadow-sm resize-none"
+                  rows={3}
+                  placeholder="Bugün kendimi nasıl hissediyorum..."
+                />
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button 
+                  type="button"
+                  onClick={() => setShowWeightModal(false)}
+                  className="flex-1 py-6 text-slate-400 font-black text-xs uppercase tracking-widest hover:bg-slate-50 rounded-[2rem] transition-all"
+                >
+                  İptal
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 py-6 bg-green-600 text-white font-black rounded-[2rem] shadow-2xl shadow-green-100 hover:bg-green-700 transition-all text-xs uppercase tracking-widest"
+                >
+                  Kaydet
                 </button>
               </div>
             </form>

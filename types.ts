@@ -19,6 +19,16 @@ export interface ActivityLog {
   activity_type?: ActivityType;
 }
 
+export interface WeightLog {
+  id: string;
+  user_id: string;
+  weight: number;
+  date: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -29,4 +39,4 @@ export interface UserProfile {
   created_at?: string;
 }
 
-export type ViewState = 'dashboard' | 'logs' | 'settings' | 'new-activity' | 'admin-panel';
+export type ViewState = 'dashboard' | 'logs' | 'settings' | 'new-activity' | 'admin-panel' | 'weight-tracker';
