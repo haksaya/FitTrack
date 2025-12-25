@@ -96,6 +96,7 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({ user }) => {
         date: new Date(log.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }),
         weight: log.weight,
         leanBodyMass: log.lean_body_mass || null,
+        bodyFatPercentage: log.body_fat_percentage || null,
         fullDate: log.date
       }));
   }, [weightLogs]);
@@ -247,6 +248,66 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({ user }) => {
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-green-600"></div>
               <span className="text-sm font-bold text-slate-600">Yağsız Kitle</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Vücut Yağ Oranı Grafiği */}
+      {chartData.length > 0 && chartData.some(d => d.bodyFatPercentage !== null) && (
+        <div className="bg-white p-12 rounded-[3.5rem] border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight">Vücut Yağ Oranı Grafiği</h3>
+            <div className="px-6 py-3 bg-orange-50 text-orange-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 border border-orange-100">
+              <Calendar size={14} /> {chartData.filter(d => d.bodyFatPercentage !== null).length} Ölçüm
+            </div>
+          </div>
+          <div className="h-96 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }}
+                  dy={15}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 800 }}
+                  domain={['dataMin - 2', 'dataMax + 2']}
+                  label={{ value: 'Yağ Oranı (%)', angle: -90, position: 'insideLeft', style: { fill: '#94a3b8', fontWeight: 800, fontSize: 11 } }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '1rem',
+                    padding: '12px',
+                    fontSize: '12px',
+                    fontWeight: 700
+                  }}
+                  formatter={(value: any) => [value + '%', 'Vücut Yağ Oranı']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="bodyFatPercentage"
+                  name="bodyFatPercentage"
+                  stroke="#f97316"
+                  strokeWidth={3}
+                  dot={{ fill: '#f97316', r: 5 }}
+                  activeDot={{ r: 7 }}
+                  connectNulls
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex items-center justify-center gap-8 mt-6 pt-6 border-t border-slate-100">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-orange-600"></div>
+              <span className="text-sm font-bold text-slate-600">Vücut Yağ Oranı</span>
             </div>
           </div>
         </div>
