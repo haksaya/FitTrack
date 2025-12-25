@@ -108,6 +108,8 @@ CREATE TABLE weight_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   weight NUMERIC(5, 2) NOT NULL,
+  lean_body_mass NUMERIC(5, 2),
+  body_fat_percentage NUMERIC(4, 2),
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,

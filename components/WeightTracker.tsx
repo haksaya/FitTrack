@@ -14,6 +14,8 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [weight, setWeight] = useState('');
+  const [leanBodyMass, setLeanBodyMass] = useState('');
+  const [bodyFatPercentage, setBodyFatPercentage] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
 
@@ -39,16 +41,23 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({ user }) => {
     e.preventDefault();
     if (!weight || !user) return;
 
-    const { error } = await supabase.from('weight_logs').insert({
+    const insertData: any = {
       user_id: user.id,
       weight: parseFloat(weight),
       date,
       notes
-    });
+    };
+
+    if (leanBodyMass) insertData.lean_body_mass = parseFloat(leanBodyMass);
+    if (bodyFatPercentage) insertData.body_fat_percentage = parseFloat(bodyFatPercentage);
+
+    const { error } = await supabase.from('weight_logs').insert(insertData);
 
     if (!error) {
       setShowAddModal(false);
       setWeight('');
+      setLeanBodyMass('');
+      setBodyFatPercentage('');
       setNotes('');
       setDate(new Date().toISOString().split('T')[0]);
       fetchWeightLogs();
@@ -234,6 +243,20 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({ user }) => {
                   </div>
                   <div>
                     <h4 className="text-lg font-black text-slate-900">{log.weight} kg</h4>
+                    {(log.lean_body_mass || log.body_fat_percentage) && (
+                      <div className="flex items-center gap-4 mt-1">
+                        {log.lean_body_mass && (
+                          <span className="text-xs text-slate-600 font-semibold bg-slate-200 px-2 py-1 rounded-lg">
+                            YVK: {log.lean_body_mass} kg
+                          </span>
+                        )}
+                        {log.body_fat_percentage && (
+                          <span className="text-xs text-slate-600 font-semibold bg-slate-200 px-2 py-1 rounded-lg">
+                            Yağ: {log.body_fat_percentage}%
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <p className="text-sm text-slate-500 font-medium flex items-center gap-2 mt-1">
                       <Calendar size={14} />
                       {new Date(log.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -273,6 +296,32 @@ const WeightTracker: React.FC<WeightTrackerProps> = ({ user }) => {
                   className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="75.5"
                   required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">
+                  Yağsız Vücut Kitlesi (kg)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={leanBodyMass}
+                  onChange={(e) => setLeanBodyMass(e.target.value)}
+                  className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="60.0"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">
+                  Vücut Yağ Oranı (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={bodyFatPercentage}
+                  onChange={(e) => setBodyFatPercentage(e.target.value)}
+                  className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="15.0"
                 />
               </div>
               <div>

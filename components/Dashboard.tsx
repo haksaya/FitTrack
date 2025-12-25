@@ -27,6 +27,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   
   // Kilo girişi için state'ler
   const [weightInput, setWeightInput] = useState('');
+  const [weightLeanBodyMass, setWeightLeanBodyMass] = useState('');
+  const [weightBodyFatPercentage, setWeightBodyFatPercentage] = useState('');
   const [weightDate, setWeightDate] = useState(new Date().toISOString().split('T')[0]);
   const [weightNotes, setWeightNotes] = useState('');
 
@@ -116,16 +118,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     e.preventDefault();
     if (!weightInput || !user) return;
 
-    const { error } = await supabase.from('weight_logs').insert({
+    const insertData: any = {
       user_id: user.id,
       weight: parseFloat(weightInput),
       date: weightDate,
       notes: weightNotes
-    });
+    };
+
+    if (weightLeanBodyMass) insertData.lean_body_mass = parseFloat(weightLeanBodyMass);
+    if (weightBodyFatPercentage) insertData.body_fat_percentage = parseFloat(weightBodyFatPercentage);
+
+    const { error } = await supabase.from('weight_logs').insert(insertData);
 
     if (!error) {
       setShowWeightModal(false);
       setWeightInput('');
+      setWeightLeanBodyMass('');
+      setWeightBodyFatPercentage('');
       setWeightNotes('');
       setWeightDate(new Date().toISOString().split('T')[0]);
       fetchData();
@@ -748,6 +757,30 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   onChange={(e) => setWeightInput(e.target.value)}
                   className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-50 focus:border-green-500 focus:bg-white bg-slate-50 outline-none transition-all font-black text-slate-700 shadow-sm text-center text-3xl"
                   placeholder="75.5"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Yağsız Vücut Kitlesi (kg)</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  value={weightLeanBodyMass}
+                  onChange={(e) => setWeightLeanBodyMass(e.target.value)}
+                  className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-50 focus:border-green-500 focus:bg-white bg-slate-50 outline-none transition-all font-black text-slate-700 shadow-sm text-center text-xl"
+                  placeholder="60.0"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Vücut Yağ Oranı (%)</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  value={weightBodyFatPercentage}
+                  onChange={(e) => setWeightBodyFatPercentage(e.target.value)}
+                  className="w-full px-8 py-6 rounded-[2rem] border-2 border-slate-50 focus:border-green-500 focus:bg-white bg-slate-50 outline-none transition-all font-black text-slate-700 shadow-sm text-center text-xl"
+                  placeholder="15.0"
                 />
               </div>
 

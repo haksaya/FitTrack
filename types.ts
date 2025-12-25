@@ -23,6 +23,8 @@ export interface WeightLog {
   id: string;
   user_id: string;
   weight: number;
+  lean_body_mass?: number;
+  body_fat_percentage?: number;
   date: string;
   notes?: string;
   created_at: string;
